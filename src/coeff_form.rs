@@ -47,9 +47,7 @@ pub struct KZGVerifier<'params> {
 impl<'params> KZGProver<'params> {
     /// initializes `polynomial` to zero polynomial
     pub fn new(parameters: &'params KZGParams) -> Self {
-        Self {
-            parameters,
-        }
+        Self { parameters }
     }
 
     pub fn parameters(&self) -> &'params KZGParams {
@@ -63,7 +61,11 @@ impl<'params> KZGProver<'params> {
         commitment.to_affine()
     }
 
-    pub fn create_witness(&self, polynomial: &Polynomial, (x, y): (Scalar, Scalar)) -> Result<KZGWitness, KZGError> {
+    pub fn create_witness(
+        &self,
+        polynomial: &Polynomial,
+        (x, y): (Scalar, Scalar),
+    ) -> Result<KZGWitness, KZGError> {
         let mut dividend = polynomial.clone();
         dividend.coeffs[0] -= y;
 
@@ -72,7 +74,9 @@ impl<'params> KZGProver<'params> {
             // by polynomial remainder theorem, if (x - point.x) does not divide self.polynomial, then
             // self.polynomial(point.y) != point.1
             (_, Some(_)) => Err(KZGError::PointNotOnPolynomial),
-            (psi, None) if psi.num_coeffs() == 1 => Ok((self.parameters.gs[0] * psi.coeffs[0]).to_affine()),
+            (psi, None) if psi.num_coeffs() == 1 => {
+                Ok((self.parameters.gs[0] * psi.coeffs[0]).to_affine())
+            }
             (psi, None) => {
                 let gs = &self.parameters.gs[..psi.num_coeffs()];
                 Ok(G1Projective::multi_exp(gs, psi.slice_coeffs()).to_affine())
@@ -336,7 +340,9 @@ mod tests {
         let polynomial = Polynomial::new(coeffs);
 
         let commitment = prover.commit(&polynomial);
-        let witness = prover.create_witness(&polynomial, (1.into(), 4.into())).unwrap();
+        let witness = prover
+            .create_witness(&polynomial, (1.into(), 4.into()))
+            .unwrap();
         assert_verify_eval(&verifier, (1.into(), 4.into()), &commitment, &witness);
         assert_verify_eval_fails(&verifier, (1.into(), 5.into()), &commitment, &witness);
     }

@@ -365,9 +365,9 @@ impl SubProductTree {
 }
 
 fn op_tree_inner<T, F, O>(left: usize, size: usize, get_elem: &F, op: &O) -> T
-    where
-        F: Fn(usize) -> T,
-        O: Fn(T, T) -> T,
+where
+    F: Fn(usize) -> T,
+    O: Fn(T, T) -> T,
 {
     assert!(size > 0);
     if size == 1 {
@@ -384,9 +384,9 @@ fn op_tree_inner<T, F, O>(left: usize, size: usize, get_elem: &F, op: &O) -> T
 }
 
 pub fn op_tree<T, F, O>(size: usize, get_elem: &F, op: &O) -> T
-    where
-        F: Fn(usize) -> T,
-        O: Fn(T, T) -> T,
+where
+    F: Fn(usize) -> T,
+    O: Fn(T, T) -> T,
 {
     op_tree_inner(0, size, get_elem, op)
 }
@@ -601,11 +601,11 @@ mod tests {
             assert!(
                 tree.product
                     == tree
-                    .left
-                    .as_ref()
-                    .unwrap()
-                    .product
-                    .best_mul(&tree.right.as_ref().unwrap().product)
+                        .left
+                        .as_ref()
+                        .unwrap()
+                        .product
+                        .best_mul(&tree.right.as_ref().unwrap().product)
             );
         }
     }

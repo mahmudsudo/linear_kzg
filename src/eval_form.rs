@@ -1,6 +1,6 @@
 use blstrs::{pairing, G1Affine, G1Projective, G2Affine, G2Projective, Scalar};
 use pairing::group::ff::PrimeField;
-use pairing::group::{ff::Field, Group, prime::PrimeCurveAffine, Curve};
+use pairing::group::{ff::Field, prime::PrimeCurveAffine, Curve, Group};
 use std::fmt::Debug;
 
 #[cfg(feature = "serde_support")]
@@ -85,10 +85,7 @@ fn div_by_omega_i(evals: &EvaluationDomain, m: usize) -> EvaluationDomain {
 
 impl<'params> KZGProverEvalForm<'params> {
     /// initializes `polynomial` to zero polynomial
-    pub fn new(
-        parameters: &'params KZGParams,
-        lagrange_basis_g: &'params [G1Projective],
-    ) -> Self {
+    pub fn new(parameters: &'params KZGParams, lagrange_basis_g: &'params [G1Projective]) -> Self {
         let (d, exp, omega) = EvaluationDomain::compute_omega(parameters.gs.len()).unwrap();
         Self {
             parameters,
@@ -147,7 +144,11 @@ impl<'params> KZGProverEvalForm<'params> {
 }
 
 impl<'params> KZGVerifierEvalForm<'params> {
-    pub fn new(parameters: &'params KZGParams, lagrange_basis_g: &'params [G1Projective], lagrange_basis_h: &'params [G2Projective]) -> Self {
+    pub fn new(
+        parameters: &'params KZGParams,
+        lagrange_basis_g: &'params [G1Projective],
+        lagrange_basis_h: &'params [G2Projective],
+    ) -> Self {
         let (d, exp, omega) = EvaluationDomain::compute_omega(parameters.gs.len()).unwrap();
         KZGVerifierEvalForm {
             parameters,
@@ -155,7 +156,7 @@ impl<'params> KZGVerifierEvalForm<'params> {
             exp,
             omega,
             lagrange_basis_g,
-            lagrange_basis_h
+            lagrange_basis_h,
         }
     }
 
@@ -196,7 +197,8 @@ impl<'params> KZGVerifierEvalForm<'params> {
         commitment: &KZGCommitment,
         witness: &KZGWitness,
     ) -> bool {
-        let mut z = EvaluationDomain::new(vec![Scalar::zero(); self.d], self.d, self.exp, self.omega);
+        let mut z =
+            EvaluationDomain::new(vec![Scalar::zero(); self.d], self.d, self.exp, self.omega);
         z.coeffs[0] = -Scalar::one();
         z.coeffs[self.d - 1] = Scalar::one();
 
@@ -218,7 +220,9 @@ impl<'params> KZGVerifierEvalForm<'params> {
     }
 }
 
-pub fn compute_lagrange_basis_and_polynomials(params: &KZGParams) -> (Vec<G1Projective>, Vec<G2Projective>, Vec<Polynomial>) {
+pub fn compute_lagrange_basis_and_polynomials(
+    params: &KZGParams,
+) -> (Vec<G1Projective>, Vec<G2Projective>, Vec<Polynomial>) {
     let d = params.gs.len();
     assert!(d & (d - 1) == 0);
 
@@ -235,7 +239,6 @@ pub fn compute_lagrange_basis_and_polynomials(params: &KZGParams) -> (Vec<G1Proj
             l = l.best_mul(&Polynomial::new(vec![-xj, Scalar::one()]));
             l = l.scalar_multiplication((xi - xj).invert().unwrap());
         }
-
 
         let coeffs = l.coeffs.clone();
         let g = &params.gs[..coeffs.len()];
@@ -389,7 +392,11 @@ mod tests {
         let params = test_setup(&mut rng, 16);
         let lagrange_basis = compute_lagrange_basis(&params);
 
-        let (mut prover, verifier) = test_participants(&params, lagrange_basis.0.as_slice(), lagrange_basis.1.as_slice());
+        let (mut prover, verifier) = test_participants(
+            &params,
+            lagrange_basis.0.as_slice(),
+            lagrange_basis.1.as_slice(),
+        );
 
         let evals = random_evals(&mut rng, prover.d);
         let commitment = prover.commit(&evals);
@@ -413,7 +420,11 @@ mod tests {
         let params = test_setup(&mut rng, 8);
         let lagrange_basis = compute_lagrange_basis(&params);
 
-        let (prover, verifier) = test_participants(&params, lagrange_basis.0.as_slice(), lagrange_basis.1.as_slice());
+        let (prover, verifier) = test_participants(
+            &params,
+            lagrange_basis.0.as_slice(),
+            lagrange_basis.1.as_slice(),
+        );
 
         let evals = random_evals(&mut rng, prover.d);
         let commitment = prover.commit(&evals);
@@ -456,7 +467,11 @@ mod tests {
         let params = test_setup(&mut rng, 16);
         let lagrange_basis = compute_lagrange_basis(&params);
 
-        let (prover, verifier) = test_participants(&params, lagrange_basis.0.as_slice(), lagrange_basis.1.as_slice());
+        let (prover, verifier) = test_participants(
+            &params,
+            lagrange_basis.0.as_slice(),
+            lagrange_basis.1.as_slice(),
+        );
 
         let evals = random_evals(&mut rng, prover.d);
         let commitment = prover.commit(&evals);
@@ -474,7 +489,11 @@ mod tests {
         let params = test_setup(&mut rng, 16);
         let lagrange_basis = compute_lagrange_basis(&params);
 
-        let (mut prover, verifier) = test_participants(&params, lagrange_basis.0.as_slice(), lagrange_basis.1.as_slice());
+        let (mut prover, verifier) = test_participants(
+            &params,
+            lagrange_basis.0.as_slice(),
+            lagrange_basis.1.as_slice(),
+        );
 
         let evals = random_evals(&mut rng, prover.d);
         let commitment = prover.commit(&evals);
